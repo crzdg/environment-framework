@@ -1,5 +1,5 @@
 ![License](https://img.shields.io/github/license/crzdg/environment-framework)
-![Last Commit](https://img.shields.io/github/last-commit/crzdg/environmet-framework)
+![Last Commit](https://img.shields.io/github/last-commit/crzdg/environment-framework)
 ![Coverage](https://raw.githubusercontent.com/gist/crzdg/e60a9d0af9c141f6d2a3e0bd09366f5f/raw/coverage-badge.svg)
 ![Tests](https://raw.githubusercontent.com/gist/crzdg/79f221f23ccd460bba50b81f0df78ae1/raw/tests-badge.svg)
 ![PyPI](https://img.shields.io/pypi/pyversions/environment-framework)
