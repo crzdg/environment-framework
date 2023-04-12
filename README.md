@@ -13,6 +13,8 @@ This repository contains the Python package `environment-framework`. The project
 
 A wrapper around [`gymnasium`](https://github.com/Farama-Foundation/Gymnasium) is provided to connect to well-known frameworks in the field.
 
+> The wrapper for gymnasium uses the gymnasium>=0.26 API structure!
+
 ### 🤔 Why create this project?
 
 The project emerges from a previous project of mine. It was used to separate the different elements of the projects agent-environment-loop. 
