@@ -174,7 +174,7 @@ class GridWorldSimulation:
 
 # %%
 game = GridWorldGame(7)
-scale_factor = 10
+scale_factor = 50
 level = GridWorldLevel(game, GridWorldObserver(game), GridWorldEstimator(game), GridWorldVisualizer(game))
 simulator = Simulator(GridWorldSimulation(level))
 while not simulator.done:
@@ -210,7 +210,7 @@ model.save("gridworld-dqn.zip")
 
 # %%
 game = GridWorldGame(7)
-scale_factor = 20
+scale_factor = 50
 level = GridWorldLevel(game, GridWorldObserver(game), GridWorldEstimator(game), GridWorldVisualizer(game))
 simulator = Simulator(GridWorldSimulation(level))
 env = SimulatorFrameworkGym(GridWorldSimulation(level), render_mode="rgb_array")
@@ -228,3 +228,5 @@ for _ in range(50):
     cv2.waitKey(250)
 cv2.waitKey(500)
 cv2.destroyAllWindows()
+
+# %%
