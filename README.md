@@ -54,6 +54,11 @@ class GridWorldGame:
     def done(self) -> bool:
         return self.player_position == self.target_position
 
+    @property
+    def space(self) -> Space:
+        return Discrete(4)
+
+
     def act(self, action: Action, **_: Any) -> None:
         if action == Action.UP:
             self.player_position = (self.player_position[0], self.player_position[1] - 1)
@@ -80,12 +85,11 @@ class GridWorldObserver:
         self.game = game
 
     @property
-    def shape(self) -> Tuple[int, ...]:
-        return (4,)
+    def space(self) -> Space:
+        return Box(shape=(4,), low=-math.inf, high=math.inf)
 
-    def observe(self, _: Any) -> List[float]:
-        return [*self.game.player_position, *self.game.target_position]
-
+    def observe(self, _: Any) -> NDArray:
+        return np.array([*self.game.player_position, *self.game.target_position])
 
 class GridWorldEstimator:
     def __init__(self, game: GridWorldGame) -> None:
@@ -127,27 +131,13 @@ class GridWorldLevel(Level):
         self._game.reset()
 
     def step(self, action: Action) -> Any:
-        if isinstance(action, np.int64): # handle integer inputs
+        if isinstance(action, np.int64):  # handle integer inputs
             action = Action(action)
         self._game.act(action)
 
-    @property
-    def action_space(self) -> ActionSpace:
-        return ActionSpace("discrete", 4)
-
-    @property
-    def observation_space(self) -> ObservationSpace:
-        return ObservationSpace("discrete", (4,))
-
-
-class GridWorldSimulation:
-    def __init__(self, level: GridWorldLevel) -> None:
-        self.level = level
-        self.level_settings = None
-
 game = GridWorldGame(7)
 level = GridWorldLevel(game, GridWorldObserver(game), GridWorldEstimator(game), GridWorldVisualizer(game))
-simulator = Simulator(GridWorldSimulation(level))
+simulator = Simulator(level)
 while not simulator.done:
     action = Action(randint(0, 3))
     simulator.step(action)
