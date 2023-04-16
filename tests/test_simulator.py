@@ -3,16 +3,15 @@ from unittest.mock import MagicMock, PropertyMock
 import pytest
 
 from environment_framework.level import Level
-from environment_framework.simulator import Simulation, Simulator
+from environment_framework.simulator import Simulator
 
 
 @pytest.fixture
 def setup() -> Simulator:
     simulation_mock = MagicMock()
     level_mock = MagicMock(spec_set=Level)
-    simulation_mock.level = level_mock
 
-    return Simulator(simulation_mock, 10000)
+    return Simulator(level_mock, 10000)
 
 
 def test_action_space(setup: Simulator) -> None:

@@ -1,10 +1,11 @@
 from unittest.mock import MagicMock
 
 import pytest
+from gymnasium.spaces import Discrete, Space
 
 from environment_framework.estimator import Estimator
 from environment_framework.game import Game
-from environment_framework.level import ActionSpace, Level, ObservationSpace
+from environment_framework.level import Level
 from environment_framework.observer import Observer
 from environment_framework.visualizer import Visualizer
 
@@ -13,12 +14,12 @@ from environment_framework.visualizer import Visualizer
 def setup() -> Level:
     class LevelImpl(Level):
         @property
-        def observation_space(self) -> ObservationSpace:
-            return ObservationSpace("discrete", (1,))
+        def observation_space(self) -> Space:
+            return Discrete(1)
 
         @property
-        def action_space(self) -> ActionSpace:
-            return ActionSpace("discrete", 10)
+        def action_space(self) -> Space:
+            return Discrete(10)
 
         def step(self, action: int) -> None:
             assert True

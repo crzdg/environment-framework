@@ -3,14 +3,18 @@ from unittest.mock import MagicMock
 from typing import Any
 
 import numpy as np
+from numpy.typing import NDArray
 import pytest
+
+from gymnasium.spaces import Discrete, Space
 
 from environment_framework.estimator import Estimator
 from environment_framework.game import Game
-from environment_framework.gym import SimulatorFrameworkGym
-from environment_framework.level import ActionSpace, ILevel, Level, ObservationSpace
+from environment_framework.gym import EnvironmentFrameworkGym
+from environment_framework.level import Level
+from environment_framework.ilevel import ILevel
 from environment_framework.observer import Observer
-from environment_framework.simulator import Simulation, Simulator
+from environment_framework.simulator import Simulator
 from environment_framework.visualizer import Visualizer
 
 
@@ -22,12 +26,14 @@ class TestLevel(Level):
         return True
 
     @property
-    def observation_space(self) -> ObservationSpace:
-        return ObservationSpace("discrete", (10,))
+    def observation_space(self) -> Space:
+        return Discrete(
+            10,
+        )
 
     @property
-    def action_space(self) -> ActionSpace:
-        return ActionSpace("discrete", 10)
+    def action_space(self) -> Space:
+        return Discrete(10)
 
     def reset(self) -> None:
         ...
@@ -35,7 +41,7 @@ class TestLevel(Level):
     def step(self, action: int) -> bool:
         return True
 
-    def observe(self) -> List[float]:
+    def observe(self) -> NDArray:
         return np.zeros((10,))
 
 
@@ -47,7 +53,7 @@ class TestSimulation:
         self.level_settings = settings
 
 
-SetupT = Tuple[SimulatorFrameworkGym, MagicMock]
+SetupT = Tuple[EnvironmentFrameworkGym, MagicMock]
 
 
 @pytest.fixture
@@ -58,14 +64,13 @@ def setup() -> SetupT:
     visualizer_mock = MagicMock(spec_set=Visualizer)
 
     level: ILevel = TestLevel(game_mock, observer_mock, estimator_mock, visualizer_mock)
-    simulation: Simulation = TestSimulation(level, 10)
     simulator_mock = MagicMock(spec_set=Simulator)
-    gym = SimulatorFrameworkGym(simulation, "rgb_array")
+    gym = EnvironmentFrameworkGym(level, "rgb_array")
     gym.simulator = simulator_mock
     return gym, simulator_mock
 
 
-def test_step(setup: SimulatorFrameworkGym) -> None:
+def test_step(setup: EnvironmentFrameworkGym) -> None:
     gym, simulator_mock = setup
 
     simulator_mock.estimate.return_value = 42
@@ -81,7 +86,7 @@ def test_step(setup: SimulatorFrameworkGym) -> None:
     assert extra == {}
 
 
-def test_reset(setup: SimulatorFrameworkGym) -> None:
+def test_reset(setup: EnvironmentFrameworkGym) -> None:
     gym, simulator_mock = setup
 
     simulator_mock.observe.return_value = [42]
@@ -91,7 +96,7 @@ def test_reset(setup: SimulatorFrameworkGym) -> None:
     assert observation == ([42], {})
 
 
-def test_render(setup: SimulatorFrameworkGym) -> None:
+def test_render(setup: EnvironmentFrameworkGym) -> None:
     gym, simulator_mock = setup
     simulator_mock.render.return_value = "frame"
     frame = gym.render()
