@@ -26,13 +26,19 @@ from typing import Any, List, Tuple
 from stable_baselines3.common.evaluation import evaluate_policy
 from stable_baselines3.dqn import DQN
 
+from numpy.typing import NDArray
+from gymnasium.spaces import Space, Discrete
 
 import cv2
 import numpy as np
 
-from environment_framework.level import ActionSpace, Level, ObservationSpace
-from environment_framework.gym import SimulatorFrameworkGym
-from environment_framework.simulator import Simulator
+from gymnasium.spaces import Space, Box
+import math
+import numpy as np
+
+from environment_framework import Level
+from environment_framework import EnvironmentFrameworkGym
+from environment_framework import Simulator
 
 
 # %% [markdown]
@@ -57,6 +63,11 @@ class GridWorldGame:
     @property
     def done(self) -> bool:
         return self.player_position == self.target_position
+    
+    @property
+    def space(self) -> Space:
+        return Discrete(4)
+        
 
     def act(self, action: Action, **_: Any) -> None:
         if action == Action.UP:
@@ -91,11 +102,11 @@ class GridWorldObserver:
         self.game = game
 
     @property
-    def shape(self) -> Tuple[int, ...]:
-        return (4,)
+    def space(self) -> Space:
+        return Box(shape=(4,), low=-math.inf, high=math.inf)
 
-    def observe(self, _: Any) -> List[float]:
-        return [*self.game.player_position, *self.game.target_position]
+    def observe(self, _: Any) -> NDArray:
+        return np.array([*self.game.player_position, *self.game.target_position])
 
 
 class GridWorldEstimator:
@@ -154,20 +165,6 @@ class GridWorldLevel(Level):
             action = Action(action)
         self._game.act(action)
 
-    @property
-    def action_space(self) -> ActionSpace:
-        return ActionSpace("discrete", 4)
-
-    @property
-    def observation_space(self) -> ObservationSpace:
-        return ObservationSpace("discrete", (4,))
-
-
-class GridWorldSimulation:
-    def __init__(self, level: GridWorldLevel) -> None:
-        self.level = level
-        self.level_settings = None
-
 
 # %% [markdown]
 # ## Look at a random selecting agent
@@ -176,7 +173,7 @@ class GridWorldSimulation:
 game = GridWorldGame(7)
 scale_factor = 50
 level = GridWorldLevel(game, GridWorldObserver(game), GridWorldEstimator(game), GridWorldVisualizer(game))
-simulator = Simulator(GridWorldSimulation(level))
+simulator = Simulator(level)
 while not simulator.done:
     action = Action(randint(0, 3))
     simulator.step(action)
@@ -193,12 +190,11 @@ cv2.destroyAllWindows()
 # %%
 game = GridWorldGame(7)
 level = GridWorldLevel(game, GridWorldObserver(game), GridWorldEstimator(game), GridWorldVisualizer(game))
-simulator = Simulator(GridWorldSimulation(level))
-env = SimulatorFrameworkGym(GridWorldSimulation(level), render_mode="rgb_array")
+env = EnvironmentFrameworkGym(level, render_mode="rgb_array")
 
 model = DQN("MlpPolicy", env)
 model.learn(
-    total_timesteps=int(2.5e5),
+    total_timesteps=int(5e5),
     progress_bar=True,
 )
 
@@ -212,8 +208,7 @@ model.save("gridworld-dqn.zip")
 game = GridWorldGame(7)
 scale_factor = 50
 level = GridWorldLevel(game, GridWorldObserver(game), GridWorldEstimator(game), GridWorldVisualizer(game))
-simulator = Simulator(GridWorldSimulation(level))
-env = SimulatorFrameworkGym(GridWorldSimulation(level), render_mode="rgb_array")
+env = EnvironmentFrameworkGym(level, render_mode="rgb_array")
 
 model = DQN.load("gridworld-dqn.zip", env=env)
 vec_env = model.get_env()
