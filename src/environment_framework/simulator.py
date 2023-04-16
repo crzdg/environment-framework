@@ -1,15 +1,9 @@
-from typing import Any, List, Protocol
+from typing import Any
 
-from environment_framework.level import ActionSpace, ILevel, ObservationSpace
+from gymnasium.spaces import Space
+from numpy.typing import NDArray
 
-
-class Simulation(Protocol):
-    """
-    Describes the simulation of a Level.
-    """
-
-    level: ILevel
-    level_settings: Any
+from environment_framework.ilevel import ILevel
 
 
 class Simulator:  # pylint: disable = too-many-instance-attributes
@@ -19,19 +13,19 @@ class Simulator:  # pylint: disable = too-many-instance-attributes
 
     # TODO: Add a proper state which is passed to the observe,estimate and render method.
     # TODO: Rename episodes to simulation.
-    def __init__(self, simulation: Simulation, max_episode_steps: int = 100000) -> None:
-        self.level = simulation.level
+    def __init__(self, level: ILevel, max_episode_steps: int = 100000) -> None:
+        self.level = level
         self._max_episode_steps = max_episode_steps
         self.current_episodes_steps_done = 0
         self.episodes_done = 0
         self.steps_done = 0
 
     @property
-    def action_space(self) -> ActionSpace:
+    def action_space(self) -> Space:
         return self.level.action_space
 
     @property
-    def observation_space(self) -> ObservationSpace:
+    def observation_space(self) -> Space:
         return self.level.observation_space
 
     @property
@@ -80,7 +74,7 @@ class Simulator:  # pylint: disable = too-many-instance-attributes
         self.steps_done += 1
         return self.level.step(action)
 
-    def observe(self) -> List[float]:
+    def observe(self) -> NDArray:
         """
         Observes the level and returns an observation.
 

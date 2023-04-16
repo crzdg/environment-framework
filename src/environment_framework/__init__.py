@@ -1,7 +1,8 @@
 from .estimator import Estimator
 from .game import Game
-from .gym import SimulatorFrameworkGym
-from .level import ActionSpace, Level, ObservationSpace
+from .gym import EnvironmentFrameworkGym
+from .ilevel import ILevel
+from .level import Level
 from .observer import Observer
-from .simulator import Simulation, Simulator
+from .simulator import Simulator
 from .visualizer import Visualizer

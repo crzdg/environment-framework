@@ -1,45 +1,10 @@
-from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, Protocol
 
 from gymnasium.spaces import Space
 from numpy.typing import NDArray
 
-from environment_framework.estimator import Estimator
-from environment_framework.game import Game
-from environment_framework.observer import Observer
-from environment_framework.visualizer import Visualizer
 
-
-class Level(ABC):  # pylint: disable=too-many-instance-attributes
-    """
-    Manages the lifecycle of a game and its observer and estimator.
-    Is used within the Simulator to step through a Simulation.
-    """
-
-    def __init__(
-        self,
-        game: Game,
-        observer: Observer,
-        estimator: Estimator,
-        visualizer: Visualizer,
-    ) -> None:
-        """
-        Parameters
-        ----------
-            game: Game
-                The game in which the level takes place.
-            observer: Observer
-                The observer of the game.
-            estimator: Estimator
-                The estimator of the game.
-            visualizer: Visualizer
-                The visualizer of the game.
-        """
-        self._game = game
-        self._observer = observer
-        self._estimator = estimator
-        self._visualizer = visualizer
-
+class ILevel(Protocol):
     @property
     def done(self) -> bool:
         """
@@ -50,7 +15,6 @@ class Level(ABC):  # pylint: disable=too-many-instance-attributes
             done: bool
                 Game has reached its end state.
         """
-        return self._game.done
 
     @property
     def observation_space(self) -> Space:
@@ -62,7 +26,6 @@ class Level(ABC):  # pylint: disable=too-many-instance-attributes
             observation_space: ObservationSpace
                 The observation space describtion.
         """
-        return self._observer.space
 
     @property
     def action_space(self) -> Space:
@@ -74,15 +37,12 @@ class Level(ABC):  # pylint: disable=too-many-instance-attributes
             observation_space: ActionSpace
                 The action space describtion.
         """
-        return self._game.space
 
-    @abstractmethod
     def reset(self) -> None:
         """
         Reset the level.
         """
 
-    @abstractmethod
     def step(self, action: Any) -> Any:
         """
         Take a step in the level with a given action.
@@ -106,7 +66,6 @@ class Level(ABC):  # pylint: disable=too-many-instance-attributes
             observation: List[float]
                 Observation of the current level state.
         """
-        return self._observer.observe(None)
 
     def estimate(self, estimated: Any) -> float:
         """
@@ -117,7 +76,6 @@ class Level(ABC):  # pylint: disable=too-many-instance-attributes
             estimation: float
                 Estimated reward of the current level state.
         """
-        return self._estimator.estimate(estimated)
 
     def render(self) -> Any:
         """
@@ -128,4 +86,3 @@ class Level(ABC):  # pylint: disable=too-many-instance-attributes
             visualisation: Any
                 Rendered visualisation of the current level state.
         """
-        return self._visualizer.render(None)

@@ -1,32 +1,27 @@
-import math
 from typing import Any, Dict, List, Optional, Tuple
 
 import gymnasium as gym
 
-from environment_framework.simulator import Simulation, Simulator
+from environment_framework.ilevel import ILevel
+from environment_framework.simulator import Simulator
 
 
-class SimulatorFrameworkGym(gym.Env):
+class EnvironmentFrameworkGym(gym.Env):
     metadata = {"render_modes": ["rgb_array"], "render_fps": 4}
 
     def __init__(
         self,
-        simulation: Simulation,
+        level: ILevel,
         render_mode: Any = Optional[None],
     ) -> None:
         super().__init__()
 
-        self.simulator = Simulator(simulation)
+        self.simulator = Simulator(level)
 
-        self.observation_space = gym.spaces.Box(
-            low=-math.inf, high=math.inf, shape=self.simulator.observation_space.shape
-        )
-        if self.simulator.action_space.type_ == "discrete":
-            self.action_space = gym.spaces.Discrete(self.simulator.action_space.shape)
-        else:
-            raise NotImplementedError(f"Action space type: {self.simulator.action_space.type_} not implemented")
+        self.observation_space = self.simulator.observation_space
+        self.action_space = self.simulator.action_space
 
-        supported_render_modes: List[str] = SimulatorFrameworkGym.metadata["render_modes"]
+        supported_render_modes: List[str] = EnvironmentFrameworkGym.metadata["render_modes"]
         if render_mode and render_mode not in supported_render_modes:
             raise Exception("Specified unsupported render mode")
         self.render_mode = render_mode

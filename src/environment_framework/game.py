@@ -1,5 +1,7 @@
 from typing import Any, Protocol
 
+from gymnasium.spaces import Space
+
 
 class Game(Protocol):
     @property
@@ -13,6 +15,10 @@ class Game(Protocol):
         done : bool
             Game has reached its end state.
         """
+
+    @property
+    def space(self) -> Space:
+        pass
 
     def act(self, action: Any, **kwargs: Any) -> None:
         """
