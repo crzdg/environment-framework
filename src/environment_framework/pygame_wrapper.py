@@ -2,9 +2,8 @@ from abc import ABC, abstractmethod
 from typing import cast
 
 import numpy as np
-from numpy.typing import NDArray
-
 import pygame
+from numpy.typing import NDArray
 
 
 class PygameHumanVisualizer(ABC):

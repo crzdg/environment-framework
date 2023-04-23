@@ -1,9 +1,8 @@
 from typing import Protocol
 
 import numpy as np
-from numpy.typing import NDArray
-
 from gymnasium.spaces import Space
+from numpy.typing import NDArray
 
 
 class Observer(Protocol):

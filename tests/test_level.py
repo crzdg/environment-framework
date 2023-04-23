@@ -47,18 +47,18 @@ def test_observe(setup: Level) -> None:
     level = setup
     level.observe()
 
-    level._observer.observe.assert_called_once_with(None)
+    level._observer.observe.assert_called_once()
 
 
 def test_estimate(setup: Level) -> None:
     level = setup
-    level.estimate("estimated")
+    level.estimate()
 
-    level._estimator.estimate.assert_called_once_with("estimated")
+    level._estimator.estimate.assert_called_once()
 
 
 def test_render(setup: Level) -> None:
     level = setup
     level.render_rgb()
 
-    level._visualizer.render_rgb.assert_called_once_with(None)
+    level._visualizer.render_rgb.assert_called_once()

@@ -67,7 +67,7 @@ class ILevel(Protocol):
                 Observation of the current level state.
         """
 
-    def estimate(self, estimated: Any) -> float:
+    def estimate(self) -> float:
         """
         Estimates the level state and returns a estimation value.
 
