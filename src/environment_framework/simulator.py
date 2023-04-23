@@ -38,7 +38,11 @@ class Simulator:  # pylint: disable = too-many-instance-attributes
             done: bool
                 Simulator is finished.
         """
-        return self.level.done or (self.current_episodes_steps_done >= self._max_episode_steps)
+        return self.level.done
+
+    @property
+    def truncated(self) -> bool:
+        return self.current_episodes_steps_done >= self._max_episode_steps
 
     def clear_counter(self) -> None:
         """

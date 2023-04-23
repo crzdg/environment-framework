@@ -39,10 +39,10 @@ def test_done(setup: Simulator) -> None:
 
     simulator.level.done = False
     simulator.current_episodes_steps_done = 9999
-    assert not simulator.done
+    assert not simulator.truncated
 
     simulator.current_episodes_steps_done = 10000
-    assert simulator.done
+    assert simulator.truncated
 
 
 def test_clear_counter(setup: Simulator) -> None:

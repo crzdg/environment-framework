@@ -65,17 +65,18 @@ def setup() -> SetupT:
 
     level: ILevel = TestLevel(game_mock, observer_mock, estimator_mock, visualizer_mock)
     simulator_mock = MagicMock(spec_set=Simulator)
-    gym = EnvironmentFrameworkGym(level, "rgb_array")
+    gym = EnvironmentFrameworkGym(level, 100, render_mode="rgb_array")
     gym.simulator = simulator_mock
     return gym, simulator_mock
 
 
-def test_step(setup: EnvironmentFrameworkGym) -> None:
+def test_step(setup: SetupT) -> None:
     gym, simulator_mock = setup
 
     simulator_mock.estimate.return_value = 42
     simulator_mock.observe.return_value = np.array([42])
     simulator_mock.done = True
+    simulator_mock.truncated = False
 
     observation, reward, done, truncated, extra = gym.step([10])
 
@@ -86,7 +87,7 @@ def test_step(setup: EnvironmentFrameworkGym) -> None:
     assert extra == {}
 
 
-def test_reset(setup: EnvironmentFrameworkGym) -> None:
+def test_reset(setup: SetupT) -> None:
     gym, simulator_mock = setup
 
     simulator_mock.observe.return_value = [42]
@@ -96,7 +97,7 @@ def test_reset(setup: EnvironmentFrameworkGym) -> None:
     assert observation == ([42], {})
 
 
-def test_render(setup: EnvironmentFrameworkGym) -> None:
+def test_render(setup: SetupT) -> None:
     gym, simulator_mock = setup
     simulator_mock.render.return_value = "frame"
     frame = gym.render()
