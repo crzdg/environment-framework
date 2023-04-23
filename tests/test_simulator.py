@@ -91,5 +91,5 @@ def test_estimate(setup: Simulator) -> None:
 
 def test_render(setup: Simulator) -> None:
     simulator = setup
-    simulator.render()
-    simulator.level.render.assert_called_once()
+    simulator.render_rgb()
+    simulator.level.render_rgb.assert_called_once()

@@ -119,7 +119,7 @@ class Level(ABC):  # pylint: disable=too-many-instance-attributes
         """
         return self._estimator.estimate(estimated)
 
-    def render(self) -> Any:
+    def render_rgb(self) -> Any:
         """
         Renders the current level state into a visualisation.
 
@@ -128,4 +128,10 @@ class Level(ABC):  # pylint: disable=too-many-instance-attributes
             visualisation: Any
                 Rendered visualisation of the current level state.
         """
-        return self._visualizer.render(None)
+        return self._visualizer.render_rgb(None)
+
+    def render_human(self, fps: int) -> Any:
+        return self._visualizer.render_human(None, fps)
+
+    def close(self) -> Any:
+        self._visualizer.close()

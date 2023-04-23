@@ -11,7 +11,8 @@ authors = [
 ]
 dependencies = [
     "gymnasium>=0.26",
-    "numpy"
+    "numpy",
+    "pygame"
 ]
 classifiers =[
     "Programming Language :: Python :: 3 :: Only",

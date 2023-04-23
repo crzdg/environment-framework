@@ -99,8 +99,8 @@ def test_reset(setup: SetupT) -> None:
 
 def test_render(setup: SetupT) -> None:
     gym, simulator_mock = setup
-    simulator_mock.render.return_value = "frame"
+    simulator_mock.render_rgb.return_value = "frame"
     frame = gym.render()
 
-    simulator_mock.render.assert_called_once()
+    simulator_mock.render_rgb.assert_called_once()
     assert frame == "frame"

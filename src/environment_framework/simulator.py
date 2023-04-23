@@ -109,7 +109,7 @@ class Simulator:  # pylint: disable = too-many-instance-attributes
             }
         )
 
-    def render(self) -> Any:
+    def render_rgb(self) -> Any:
         """
         Renders the current level state into a visualisation.
 
@@ -119,4 +119,10 @@ class Simulator:  # pylint: disable = too-many-instance-attributes
                 Rendered visualisation of the current level state.
         """
         # TODO: pass state
-        return self.level.render()
+        return self.level.render_rgb()
+
+    def render_human(self, fps: int) -> None:
+        self.level.render_human(fps)
+
+    def close(self) -> None:
+        self.level.close()
