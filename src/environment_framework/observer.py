@@ -1,11 +1,12 @@
-from typing import Any, Protocol
+from typing import Protocol
+
+import numpy as np
+from numpy.typing import NDArray
 
 from gymnasium.spaces import Space
-from numpy.typing import NDArray
 
 
 class Observer(Protocol):
-    # TODO: Add low and high poperties for the observation space
     @property
     def space(self) -> Space:
         """
@@ -17,7 +18,7 @@ class Observer(Protocol):
             The shape of the observation list.
         """
 
-    def observe(self, observed: Any) -> NDArray:
+    def observe(self) -> NDArray[np.float32]:
         """
         Returns an observation of the an observed object.
 

@@ -1,13 +1,11 @@
-from typing import Any, Protocol
+from typing import Protocol
 
 import numpy as np
 from numpy.typing import NDArray
 
-UINT8 = NDArray[np.uint8]
-
 
 class Visualizer(Protocol):
-    def render_rgb(self, visualized: Any) -> UINT8:
+    def render_rgb(self) -> NDArray[np.uint8]:
         """
         Renders the given visualizee to a visualisation.
 
@@ -22,7 +20,7 @@ class Visualizer(Protocol):
             The visualisation of the object.
         """
 
-    def render_human(self, visualized: Any, fps: int) -> None:
+    def render_human(self, fps: int) -> None:
         pass
 
     def close(self) -> None:

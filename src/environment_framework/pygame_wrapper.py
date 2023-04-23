@@ -1,5 +1,8 @@
 from abc import ABC, abstractmethod
-from typing import Any, cast
+from typing import cast
+
+import numpy as np
+from numpy.typing import NDArray
 
 import pygame
 
@@ -11,16 +14,19 @@ class PygameHumanVisualizer(ABC):
         self.scale_factor = scale_factor
 
     @abstractmethod
-    def render_rgb(self, _: Any) -> Any:
+    def render_rgb(self) -> NDArray[np.uint8]:
         pass
 
-    def render_human(self, _: Any, fps: int) -> Any:
-        frame = self.render_rgb(None)
+    def render_human(self, fps: int) -> None:
+        frame = self.render_rgb()
         if self.display is None:
             pygame.init()
             pygame.display.init()
             self.display = pygame.display.set_mode(
-                (frame.shape[0] * self.scale_factor, frame.shape[1] * self.scale_factor)
+                (
+                    frame.shape[0] * self.scale_factor,
+                    frame.shape[1] * self.scale_factor,
+                )
             )
         if self.clock is None:
             self.clock = pygame.time.Clock()

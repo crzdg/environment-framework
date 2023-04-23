@@ -87,7 +87,6 @@ class Simulator:  # pylint: disable = too-many-instance-attributes
             observation: List[float]
                 Observation of the current level state.
         """
-        # TODO: pass state
         return self.level.observe()
 
     def estimate(self) -> float:
@@ -99,15 +98,7 @@ class Simulator:  # pylint: disable = too-many-instance-attributes
             estimation: float
                 Estimated reward of the current level state.
         """
-        # TODO: pass state
-        return self.level.estimate(
-            {
-                "simulator": {
-                    "curr_episode_step": self.current_episodes_steps_done,
-                    "max_steps_per_episode": self._max_episode_steps,
-                }
-            }
-        )
+        return self.level.estimate()
 
     def render_rgb(self) -> Any:
         """
@@ -118,7 +109,6 @@ class Simulator:  # pylint: disable = too-many-instance-attributes
             visualisation: Any
                 Rendered visualisation of the current level state.
         """
-        # TODO: pass state
         return self.level.render_rgb()
 
     def render_human(self, fps: int) -> None:
