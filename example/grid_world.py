@@ -16,37 +16,32 @@
 # %% [markdown]
 # # Grid World example
 #
-# In this notebook we implement the GridWorld game with the `environment-framework` and use stable-baseliens3 to train a `DQN`-agent on it.
+# In this notebook we implement the GridWorld game with the
+# `environment-framework` and use stable-baseliens3 to train a `DQN`-agent on it.
+
 
 # %%
-from enum import Enum
+# pylint: disable=redefined-outer-name
+import math
 from random import randint
-from typing import Any, List, Tuple
+from typing import Any, Callable, Optional
 
+import numpy as np
+from gymnasium.spaces import Box, Discrete, Space
+from numpy.typing import NDArray
 from stable_baselines3.common.evaluation import evaluate_policy
+from stable_baselines3.common.utils import set_random_seed
+from stable_baselines3.common.vec_env import SubprocVecEnv
 from stable_baselines3.dqn import DQN
 
-from numpy.typing import NDArray
-from gymnasium.spaces import Space, Discrete
-
-import cv2
-import numpy as np
-
-from gymnasium.spaces import Space, Box
-import math
-import numpy as np
-
-from environment_framework import Level
-from environment_framework import EnvironmentFrameworkGym
-from environment_framework import Simulator
-
+from environment_framework import EnvironmentFrameworkGym, Level, PygameHumanVisualizer, Simulator
 
 # %% [markdown]
 # ## Implement the `Game`
 
 
 # %%
-class Action(Enum):
+class Action:
     UP = 0
     DOWN = 1
     RIGHT = 2
@@ -63,13 +58,12 @@ class GridWorldGame:
     @property
     def done(self) -> bool:
         return self.player_position == self.target_position
-    
+
     @property
     def space(self) -> Space:
         return Discrete(4)
-        
 
-    def act(self, action: Action, **_: Any) -> None:
+    def act(self, action: int, **_: Any) -> None:
         if action == Action.UP:
             self.player_position = (self.player_position[0], self.player_position[1] - 1)
         if action == Action.DOWN:
@@ -106,7 +100,7 @@ class GridWorldObserver:
         return Box(shape=(4,), low=-math.inf, high=math.inf)
 
     def observe(self, _: Any) -> NDArray:
-        return np.array([*self.game.player_position, *self.game.target_position])
+        return np.array([*self.game.player_position, *self.game.target_position], dtype=np.float32)
 
 
 class GridWorldEstimator:
@@ -122,19 +116,19 @@ class GridWorldEstimator:
 
 
 # %%
-class GridWorldVisualizer:
-    # We use BGR
-    BLUE = [255, 0, 0]
+class GridWorldVisualizer(PygameHumanVisualizer):
+    BLUE = [0, 0, 255]
     GREEN = [0, 255, 0]
 
     def __init__(self, game: GridWorldGame) -> None:
+        super().__init__(50)
         self.game = game
 
-    def render(self, _: Any) -> Any:
+    def render_rgb(self, _: Any) -> Any:
         frame = [[[0 for k in range(3)] for j in range(self.game.size)] for i in range(self.game.size)]
         frame[self.game.player_position[1]][self.game.player_position[0]] = self.BLUE
         frame[self.game.target_position[1]][self.game.target_position[0]] = self.GREEN
-        return frame
+        return np.array(frame, dtype=np.uint8)
 
 
 # %% [markdown]
@@ -148,21 +142,10 @@ class GridWorldLevel(Level):
     _estimator: GridWorldEstimator
     _visualizer: GridWorldVisualizer
 
-    def __init__(
-        self,
-        game: GridWorldGame,
-        observer: GridWorldObserver,
-        estimator: GridWorldEstimator,
-        visualizer: GridWorldVisualizer,
-    ) -> None:
-        super().__init__(game, observer, estimator, visualizer)
-
     def reset(self) -> None:
         self._game.reset()
 
-    def step(self, action: Action) -> Any:
-        if isinstance(action, np.int64):  # handle integer inputs
-            action = Action(action)
+    def step(self, action: int) -> Any:
         self._game.act(action)
 
 
@@ -171,57 +154,66 @@ class GridWorldLevel(Level):
 
 # %%
 game = GridWorldGame(7)
-scale_factor = 50
-level = GridWorldLevel(game, GridWorldObserver(game), GridWorldEstimator(game), GridWorldVisualizer(game))
-simulator = Simulator(level)
-while not simulator.done:
-    action = Action(randint(0, 3))
+level = GridWorldLevel(
+    game,
+    GridWorldObserver(game),
+    GridWorldEstimator(game),
+    GridWorldVisualizer(game),
+)
+simulator = Simulator(level, 50)
+
+FPS = 4
+DONE = False
+while not DONE:
+    action = simulator.action_space.sample()
     simulator.step(action)
-    frame = np.array(simulator.render(), dtype=np.uint8)
-    frame = cv2.resize(frame, (scale_factor * game.size, scale_factor * game.size), interpolation=cv2.INTER_AREA)
-    cv2.imshow("GridWorld", frame)
-    cv2.waitKey(33)
-cv2.waitKey(500)
-cv2.destroyAllWindows()
+    obs = simulator.observe()
+    reward = simulator.estimate()
+    simulator.render_human(FPS)
+    DONE = simulator.truncated or simulator.done
+simulator.close()
 
 # %% [markdown]
 # ## Use stable-baselines3 to train an DQN-agent in the environment
 
-# %%
-game = GridWorldGame(7)
-level = GridWorldLevel(game, GridWorldObserver(game), GridWorldEstimator(game), GridWorldVisualizer(game))
-env = EnvironmentFrameworkGym(level, render_mode="rgb_array")
 
-model = DQN("MlpPolicy", env)
+# %%
+def make_env(render_mode: Optional[str], rank: int, seed: int = 0, **_: Any) -> Callable:
+    def _init() -> EnvironmentFrameworkGym:
+        game = GridWorldGame(7)
+        level = GridWorldLevel(
+            game,
+            GridWorldObserver(game),
+            GridWorldEstimator(game),
+            GridWorldVisualizer(game),
+        )
+        env = EnvironmentFrameworkGym(level, 10, render_mode=render_mode)
+        env.reset(seed=seed + rank)
+        return env
+
+    set_random_seed(seed)
+    return _init
+
+
+# %%
+N_CPU = 1
+vec_env = SubprocVecEnv([make_env(None, i) for i in range(N_CPU)])
+model = DQN("MlpPolicy", vec_env)
 model.learn(
     total_timesteps=int(5e5),
     progress_bar=True,
 )
 
 # %%
-evaluate_policy(model, env, n_eval_episodes=10)
-
-# %%
 model.save("gridworld-dqn.zip")
 
 # %%
-game = GridWorldGame(7)
-scale_factor = 50
-level = GridWorldLevel(game, GridWorldObserver(game), GridWorldEstimator(game), GridWorldVisualizer(game))
-env = EnvironmentFrameworkGym(level, render_mode="rgb_array")
-
-model = DQN.load("gridworld-dqn.zip", env=env)
-vec_env = model.get_env()
-obs = vec_env.reset()
-for _ in range(50):
-    obs = np.array(obs)
-    action, _states = model.predict(obs)  # type: ignore
-    obs, _, _, _ = vec_env.step(action)
-    frame = np.array(vec_env.render(), dtype=np.uint8)
-    frame = cv2.resize(frame, (scale_factor * game.size, scale_factor * game.size), interpolation=cv2.INTER_AREA)
-    cv2.imshow("GridWorld", frame)
-    cv2.waitKey(250)
-cv2.waitKey(500)
-cv2.destroyAllWindows()
+del model
 
 # %%
+game = GridWorldGame(7)
+level = GridWorldLevel(game, GridWorldObserver(game), GridWorldEstimator(game), GridWorldVisualizer(game))
+env = EnvironmentFrameworkGym(level, 10, render_mode="human")
+model = DQN.load("gridworld-dqn.zip", env=env)
+evaluate_policy(model, env, n_eval_episodes=10)
+env.close()

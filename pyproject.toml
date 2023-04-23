@@ -113,7 +113,7 @@ python = [
 features = [
     "type"
 ]
-scripts.typing = "mypy src/"
+scripts.typing = "mypy src/ && mypy example/*.py"
 
 [[tool.hatch.envs.type.matrix]]
 python = [
