@@ -12,13 +12,10 @@ class Simulator:  # pylint: disable = too-many-instance-attributes
     """
 
     # TODO: Add a proper state which is passed to the observe,estimate and render method.
-    # TODO: Rename episodes to simulation.
-    def __init__(self, level: ILevel, max_episode_steps: int = 100000) -> None:
+    def __init__(self, level: ILevel, max_episode_steps: int) -> None:
         self.level = level
         self._max_episode_steps = max_episode_steps
         self.current_episodes_steps_done = 0
-        self.episodes_done = 0
-        self.steps_done = 0
 
     @property
     def action_space(self) -> Space:
@@ -48,8 +45,6 @@ class Simulator:  # pylint: disable = too-many-instance-attributes
         """
         Clear the counters of the Simulator.
         """
-        self.episodes_done = 0
-        self.steps_done = 0
         self.current_episodes_steps_done = 0
 
     def reset(self) -> None:
@@ -57,7 +52,6 @@ class Simulator:  # pylint: disable = too-many-instance-attributes
         Reset the Level and prepare for a new simulation.
         """
         self.level.reset()
-        self.episodes_done += 1
         self.current_episodes_steps_done = 0
 
     def step(self, action: Any) -> Any:
@@ -75,7 +69,6 @@ class Simulator:  # pylint: disable = too-many-instance-attributes
                 Returns the action taken in the Level.
         """
         self.current_episodes_steps_done += 1
-        self.steps_done += 1
         return self.level.step(action)
 
     def observe(self) -> NDArray:
