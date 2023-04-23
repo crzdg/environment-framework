@@ -10,7 +10,7 @@ from environment_framework.observer import Observer
 from environment_framework.visualizer import Visualizer
 
 
-class Level(ABC):  # pylint: disable=too-many-instance-attributes
+class Level(ABC):
     """
     Manages the lifecycle of a game and its observer and estimator.
     Is used within the Simulator to step through a Simulation.

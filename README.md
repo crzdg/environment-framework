@@ -87,14 +87,17 @@ class GridWorldObserver:
     def space(self) -> Space:
         return Box(shape=(4,), low=-math.inf, high=math.inf)
 
-    def observe(self, _: Any) -> NDArray:
-        return np.array([*self.game.player_position, *self.game.target_position], dtype=np.float32)
+    def observe(self) -> NDArray:
+        return np.array(
+            [*self.game.player_position, *self.game.target_position],
+            dtype=np.float32,
+        )
 
 class GridWorldEstimator:
     def __init__(self, game: GridWorldGame) -> None:
         self.game = game
 
-    def estimate(self, _: Any) -> float:
+    def estimate(self) -> float:
         return -1 + float(self.game.done)
 
 class GridWorldVisualizer(PygameHumanVisualizer):
@@ -105,7 +108,7 @@ class GridWorldVisualizer(PygameHumanVisualizer):
         super().__init__(50)
         self.game = game
 
-    def render_rgb(self, _: Any) -> Any:
+    def render_rgb(self) -> NDArray[np.uint8]:
         frame = [[[0 for k in range(3)] for j in range(self.game.size)] for i in range(self.game.size)]
         frame[self.game.player_position[1]][self.game.player_position[0]] = self.BLUE
         frame[self.game.target_position[1]][self.game.target_position[0]] = self.GREEN
@@ -131,7 +134,6 @@ level = GridWorldLevel(
     GridWorldVisualizer(game),
 )
 simulator = Simulator(level, 50)
-
 FPS = 4
 DONE = False
 while not DONE:
