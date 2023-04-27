@@ -18,21 +18,28 @@ class PygameHumanVisualizer(ABC):
 
     def render_human(self, fps: int) -> None:
         frame = self.render_rgb()
+        pygame_image = pygame.image.frombuffer(
+            frame.tobytes(),
+            frame.shape[1::-1],
+            "RGB",
+        )
+        pygame_image = pygame.transform.scale_by(
+            pygame_image,
+            self.scale_factor,
+        )
         if self.display is None:
             pygame.init()
             pygame.display.init()
             self.display = pygame.display.set_mode(
                 (
-                    frame.shape[0] * self.scale_factor,
-                    frame.shape[1] * self.scale_factor,
+                    pygame_image.get_width(),
+                    pygame_image.get_height(),
                 )
             )
         if self.clock is None:
             self.clock = pygame.time.Clock()
 
-        surf = pygame.surfarray.make_surface(frame)
-        surf = pygame.transform.scale_by(surf, self.scale_factor)
-        self.display.blit(surf, (0, 0))
+        self.display.blit(pygame_image, (0, 0))
         pygame.event.pump()
         pygame.display.update()
         self.clock.tick(fps)
