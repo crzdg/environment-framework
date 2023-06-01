@@ -12,13 +12,10 @@ class Simulator:  # pylint: disable = too-many-instance-attributes
     """
 
     # TODO: Add a proper state which is passed to the observe,estimate and render method.
-    # TODO: Rename episodes to simulation.
-    def __init__(self, level: ILevel, max_episode_steps: int = 100000) -> None:
+    def __init__(self, level: ILevel, max_episode_steps: int) -> None:
         self.level = level
         self._max_episode_steps = max_episode_steps
         self.current_episodes_steps_done = 0
-        self.episodes_done = 0
-        self.steps_done = 0
 
     @property
     def action_space(self) -> Space:
@@ -38,14 +35,16 @@ class Simulator:  # pylint: disable = too-many-instance-attributes
             done: bool
                 Simulator is finished.
         """
-        return self.level.done or (self.current_episodes_steps_done >= self._max_episode_steps)
+        return self.level.done
+
+    @property
+    def truncated(self) -> bool:
+        return self.current_episodes_steps_done >= self._max_episode_steps
 
     def clear_counter(self) -> None:
         """
         Clear the counters of the Simulator.
         """
-        self.episodes_done = 0
-        self.steps_done = 0
         self.current_episodes_steps_done = 0
 
     def reset(self) -> None:
@@ -53,7 +52,6 @@ class Simulator:  # pylint: disable = too-many-instance-attributes
         Reset the Level and prepare for a new simulation.
         """
         self.level.reset()
-        self.episodes_done += 1
         self.current_episodes_steps_done = 0
 
     def step(self, action: Any) -> Any:
@@ -71,7 +69,6 @@ class Simulator:  # pylint: disable = too-many-instance-attributes
                 Returns the action taken in the Level.
         """
         self.current_episodes_steps_done += 1
-        self.steps_done += 1
         return self.level.step(action)
 
     def observe(self) -> NDArray:
@@ -83,7 +80,6 @@ class Simulator:  # pylint: disable = too-many-instance-attributes
             observation: List[float]
                 Observation of the current level state.
         """
-        # TODO: pass state
         return self.level.observe()
 
     def estimate(self) -> float:
@@ -95,17 +91,9 @@ class Simulator:  # pylint: disable = too-many-instance-attributes
             estimation: float
                 Estimated reward of the current level state.
         """
-        # TODO: pass state
-        return self.level.estimate(
-            {
-                "simulator": {
-                    "curr_episode_step": self.current_episodes_steps_done,
-                    "max_steps_per_episode": self._max_episode_steps,
-                }
-            }
-        )
+        return self.level.estimate()
 
-    def render(self) -> Any:
+    def render_rgb(self) -> Any:
         """
         Renders the current level state into a visualisation.
 
@@ -114,5 +102,10 @@ class Simulator:  # pylint: disable = too-many-instance-attributes
             visualisation: Any
                 Rendered visualisation of the current level state.
         """
-        # TODO: pass state
-        return self.level.render()
+        return self.level.render_rgb()
+
+    def render_human(self, fps: int) -> None:
+        self.level.render_human(fps)
+
+    def close(self) -> None:
+        self.level.close()

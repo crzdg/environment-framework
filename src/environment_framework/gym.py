@@ -7,16 +7,17 @@ from environment_framework.simulator import Simulator
 
 
 class EnvironmentFrameworkGym(gym.Env):
-    metadata = {"render_modes": ["rgb_array"], "render_fps": 4}
+    metadata = {"render_modes": ["rgb_array", "human"], "render_fps": 16}
 
     def __init__(
         self,
         level: ILevel,
+        max_episode_steps: int,
         render_mode: Any = Optional[None],
     ) -> None:
         super().__init__()
 
-        self.simulator = Simulator(level)
+        self.simulator = Simulator(level, max_episode_steps)
 
         self.observation_space = self.simulator.observation_space
         self.action_space = self.simulator.action_space
@@ -35,8 +36,11 @@ class EnvironmentFrameworkGym(gym.Env):
     ) -> Tuple[Any, float, bool, bool, Dict]:
         action = self.simulator.step(action)
         reward = self.simulator.estimate()
-        # TODO: Implement gymnasium specific terminate / truncate strategy
-        return self.simulator.observe(), reward, self.simulator.done, False, {}
+        if self.render_mode == "human":
+            self.simulator.render_human(
+                EnvironmentFrameworkGym.metadata["render_fps"],
+            )
+        return self.simulator.observe(), reward, self.simulator.done, self.simulator.truncated, {}
 
     def reset(  # pylint: disable=unused-argument
         self, *, seed: Optional[int] = None, options: Optional[Dict] = None
@@ -46,5 +50,7 @@ class EnvironmentFrameworkGym(gym.Env):
         return self.simulator.observe(), {}
 
     def render(self) -> Optional[Any]:
-        frame = self.simulator.render()
-        return frame
+        return self.simulator.render_rgb()
+
+    def close(self) -> None:
+        self.simulator.close()

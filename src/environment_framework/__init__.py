@@ -4,5 +4,6 @@ from .gym import EnvironmentFrameworkGym
 from .ilevel import ILevel
 from .level import Level
 from .observer import Observer
+from .pygame_wrapper import PygameHumanVisualizer
 from .simulator import Simulator
 from .visualizer import Visualizer

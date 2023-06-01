@@ -37,7 +37,7 @@ jupyter lab
 ```
 
 ```python
-class Action(Enum):
+class Action:
     UP = 0
     DOWN = 1
     RIGHT = 2
@@ -58,8 +58,7 @@ class GridWorldGame:
     def space(self) -> Space:
         return Discrete(4)
 
-
-    def act(self, action: Action, **_: Any) -> None:
+    def act(self, action: int, **_: Any) -> None:
         if action == Action.UP:
             self.player_position = (self.player_position[0], self.player_position[1] - 1)
         if action == Action.DOWN:
@@ -88,29 +87,32 @@ class GridWorldObserver:
     def space(self) -> Space:
         return Box(shape=(4,), low=-math.inf, high=math.inf)
 
-    def observe(self, _: Any) -> NDArray:
-        return np.array([*self.game.player_position, *self.game.target_position])
+    def observe(self) -> NDArray:
+        return np.array(
+            [*self.game.player_position, *self.game.target_position],
+            dtype=np.float32,
+        )
 
 class GridWorldEstimator:
     def __init__(self, game: GridWorldGame) -> None:
         self.game = game
 
-    def estimate(self, _: Any) -> float:
+    def estimate(self) -> float:
         return -1 + float(self.game.done)
 
-class GridWorldVisualizer:
-    # We use BGR
-    BLUE = [255, 0, 0]
+class GridWorldVisualizer(PygameHumanVisualizer):
+    BLUE = [0, 0, 255]
     GREEN = [0, 255, 0]
 
     def __init__(self, game: GridWorldGame) -> None:
+        super().__init__(50)
         self.game = game
 
-    def render(self, _: Any) -> Any:
+    def render_rgb(self) -> NDArray[np.uint8]:
         frame = [[[0 for k in range(3)] for j in range(self.game.size)] for i in range(self.game.size)]
         frame[self.game.player_position[1]][self.game.player_position[0]] = self.BLUE
         frame[self.game.target_position[1]][self.game.target_position[0]] = self.GREEN
-        return frame
+        return np.array(frame, dtype=np.uint8)
 
 class GridWorldLevel(Level):
     _game: GridWorldGame
@@ -118,29 +120,30 @@ class GridWorldLevel(Level):
     _estimator: GridWorldEstimator
     _visualizer: GridWorldVisualizer
 
-    def __init__(
-        self,
-        game: GridWorldGame,
-        observer: GridWorldObserver,
-        estimator: GridWorldEstimator,
-        visualizer: GridWorldVisualizer,
-    ) -> None:
-        super().__init__(game, observer, estimator, visualizer)
-
     def reset(self) -> None:
         self._game.reset()
 
-    def step(self, action: Action) -> Any:
-        if isinstance(action, np.int64):  # handle integer inputs
-            action = Action(action)
+    def step(self, action: int) -> Any:
         self._game.act(action)
 
 game = GridWorldGame(7)
-level = GridWorldLevel(game, GridWorldObserver(game), GridWorldEstimator(game), GridWorldVisualizer(game))
-simulator = Simulator(level)
-while not simulator.done:
-    action = Action(randint(0, 3))
+level = GridWorldLevel(
+    game,
+    GridWorldObserver(game),
+    GridWorldEstimator(game),
+    GridWorldVisualizer(game),
+)
+simulator = Simulator(level, 50)
+FPS = 4
+DONE = False
+while not DONE:
+    action = simulator.action_space.sample()
     simulator.step(action)
+    obs = simulator.observe()
+    reward = simulator.estimate()
+    simulator.render_human(FPS)
+    DONE = simulator.truncated or simulator.done
+simulator.close()
 ```
 
 ### 📃 Documentation

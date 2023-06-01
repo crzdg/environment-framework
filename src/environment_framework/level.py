@@ -10,7 +10,7 @@ from environment_framework.observer import Observer
 from environment_framework.visualizer import Visualizer
 
 
-class Level(ABC):  # pylint: disable=too-many-instance-attributes
+class Level(ABC):
     """
     Manages the lifecycle of a game and its observer and estimator.
     Is used within the Simulator to step through a Simulation.
@@ -106,9 +106,9 @@ class Level(ABC):  # pylint: disable=too-many-instance-attributes
             observation: List[float]
                 Observation of the current level state.
         """
-        return self._observer.observe(None)
+        return self._observer.observe()
 
-    def estimate(self, estimated: Any) -> float:
+    def estimate(self) -> float:
         """
         Estimates the level state and returns a estimation value.
 
@@ -117,9 +117,9 @@ class Level(ABC):  # pylint: disable=too-many-instance-attributes
             estimation: float
                 Estimated reward of the current level state.
         """
-        return self._estimator.estimate(estimated)
+        return self._estimator.estimate()
 
-    def render(self) -> Any:
+    def render_rgb(self) -> Any:
         """
         Renders the current level state into a visualisation.
 
@@ -128,4 +128,10 @@ class Level(ABC):  # pylint: disable=too-many-instance-attributes
             visualisation: Any
                 Rendered visualisation of the current level state.
         """
-        return self._visualizer.render(None)
+        return self._visualizer.render_rgb()
+
+    def render_human(self, fps: int) -> Any:
+        return self._visualizer.render_human(fps)
+
+    def close(self) -> Any:
+        self._visualizer.close()
