@@ -6,7 +6,7 @@
 #       extension: .py
 #       format_name: hydrogen
 #       format_version: '1.3'
-#       jupytext_version: 1.14.5
+#       jupytext_version: 1.16.3
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -217,6 +217,9 @@ del model
 game = GridWorldGame(7)
 level = GridWorldLevel(game, GridWorldObserver(game), GridWorldEstimator(game), GridWorldVisualizer(game))
 env = EnvironmentFrameworkGym(level, 10, render_mode="human")
+env.metadata["render_fps"] = 4
 model = DQN.load("gridworld-dqn.zip", env=env)
 evaluate_policy(model, env, n_eval_episodes=10)
 env.close()
+
+# %%
