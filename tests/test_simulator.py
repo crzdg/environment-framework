@@ -39,22 +39,18 @@ def test_done(setup: Simulator) -> None:
 
     simulator.level.done = False
     simulator.current_episodes_steps_done = 9999
-    assert not simulator.done
+    assert not simulator.truncated
 
     simulator.current_episodes_steps_done = 10000
-    assert simulator.done
+    assert simulator.truncated
 
 
 def test_clear_counter(setup: Simulator) -> None:
     simulator = setup
-    simulator.episodes_done = 10
-    simulator.steps_done = 100
     simulator.current_episodes_steps_done = 1000
 
     simulator.clear_counter()
 
-    assert simulator.episodes_done == 0
-    assert simulator.steps_done == 0
     assert simulator.current_episodes_steps_done == 0
 
 
@@ -64,7 +60,6 @@ def test_reset(setup: Simulator) -> None:
     simulator.reset()
 
     simulator.level.reset.assert_called_once()
-    assert simulator.episodes_done == 1
     assert simulator.current_episodes_steps_done == 0
 
 
@@ -73,7 +68,6 @@ def test_step(setup: Simulator) -> None:
     simulator.step(10)
 
     simulator.level.step.assert_called_once_with(10)
-    assert simulator.steps_done == 1
     assert simulator.current_episodes_steps_done == 1
 
 
@@ -91,5 +85,5 @@ def test_estimate(setup: Simulator) -> None:
 
 def test_render(setup: Simulator) -> None:
     simulator = setup
-    simulator.render()
-    simulator.level.render.assert_called_once()
+    simulator.render_rgb()
+    simulator.level.render_rgb.assert_called_once()

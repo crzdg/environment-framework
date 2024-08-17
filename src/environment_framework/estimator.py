@@ -1,8 +1,8 @@
-from typing import Any, Protocol
+from typing import Protocol
 
 
 class Estimator(Protocol):
-    def estimate(self, estimated: Any) -> float:
+    def estimate(self) -> float:
         """
         Estimates the current reward based on a estimated object.
 

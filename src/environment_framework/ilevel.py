@@ -67,7 +67,7 @@ class ILevel(Protocol):
                 Observation of the current level state.
         """
 
-    def estimate(self, estimated: Any) -> float:
+    def estimate(self) -> float:
         """
         Estimates the level state and returns a estimation value.
 
@@ -77,7 +77,7 @@ class ILevel(Protocol):
                 Estimated reward of the current level state.
         """
 
-    def render(self) -> Any:
+    def render_rgb(self) -> Any:
         """
         Renders the current level state into a visualisation.
 
@@ -86,3 +86,9 @@ class ILevel(Protocol):
             visualisation: Any
                 Rendered visualisation of the current level state.
         """
+
+    def render_human(self, fps: int) -> Any:
+        pass
+
+    def close(self) -> Any:
+        pass
