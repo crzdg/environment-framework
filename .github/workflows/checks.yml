@@ -2,9 +2,11 @@
 name: Checks
 
 on:
+  workflow_dispatch:
   push:
     branches: 
       - "*"
+      - "!main"
     tags: 
       - "v[0-9]+.[0-9]+.[0-9]+*"
 
@@ -14,22 +16,25 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
         with:
-          token: ${{ secrets.REPO_TOKEN }}
           submodules: true
 
       - name: Setup python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v6
         with:
           python-version: |
-            3.11
             3.10
-            3.9
-            3.8
+            3.11
+            3.12
+            3.13
+            3.14
 
       - name: Install python dependencies
-        run: pip install -r requirements/dev.txt
+        run: pip install ".[ci]" 
+
+      - name: Run style checking
+        run: make style
 
       - name: Run type checking
         run: make mypy
@@ -39,3 +44,7 @@ jobs:
 
       - name: Run tests
         run: make test
+
+      - name: Make build
+        run: hatch build
+

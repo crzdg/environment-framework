@@ -12,21 +12,25 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
         with:
-          token: ${{ secrets.REPO_TOKEN }}
           submodules: true
 
       - name: Setup python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v6
         with:
-          python-version: "3.11"
+          python-version: |
+            3.10
+            3.11
+            3.12
+            3.13
+            3.14
 
       - name: Install python dependencies
         run: pip install ".[ci]" 
 
       - name: Run tests with coverage
-        run: hatch run test:cov
+        run: hatch run dev:cov
 
       - name: Create coverage badge
         run: genbadge coverage -i .coverage.xml
