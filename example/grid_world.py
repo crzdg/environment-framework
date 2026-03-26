@@ -6,7 +6,7 @@
 #       extension: .py
 #       format_name: hydrogen
 #       format_version: '1.3'
-#       jupytext_version: 1.16.3
+#       jupytext_version: 1.19.1
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -190,7 +190,7 @@ def make_env(render_mode: Optional[str], rank: int, seed: int = 0, **_: Any) -> 
             GridWorldEstimator(game),
             GridWorldVisualizer(game),
         )
-        env = EnvironmentFrameworkGym(level, 10, render_mode=render_mode)
+        env = EnvironmentFrameworkGym(level, 50, render_mode=render_mode)
         env.reset(seed=seed + rank)
         return env
 
@@ -199,8 +199,8 @@ def make_env(render_mode: Optional[str], rank: int, seed: int = 0, **_: Any) -> 
 
 
 # %%
-N_CPU = 1
-vec_env = SubprocVecEnv([make_env(None, i) for i in range(N_CPU)])
+N_CPU = 16
+vec_env = SubprocVecEnv([make_env("human", i) for i in range(N_CPU)])
 model = DQN("MlpPolicy", vec_env)
 model.learn(
     total_timesteps=int(5e5),

@@ -5,21 +5,22 @@ license = "MIT"
 license-files = { paths = ["LICENSE"] }
 readme = "README.md"
 description = "Loose building blocks to create agent-environment loops."
-requires-python = ">=3.8"
+requires-python = ">=3.10"
 authors = [
     { name = "Reto Barmettler"},
 ]
 dependencies = [
-    "gymnasium>=0.26",
-    "numpy",
-    "pygame"
+    "gymnasium>=1.2.3",
+    "pygame-ce>=2.5.7",
+    "numpy<2.3.0; python_version <= '3.10'",
+    "numpy; python_version > '3.10'",
 ]
 classifiers =[
     "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Operating System :: OS Independent",
     "Development Status :: 3 - Alpha",
 ]
@@ -61,18 +62,16 @@ ci = [
     "genbadge[all]",
 ]
 
-[build-system]
-requires = ["hatchling", "hatch-regex-commit"]
-build-backend = "hatchling.build"
 
 [tool.hatch.metadata]
 allow-direct-references = true
 
-[tool.hatch.build.targets.sdist]
-exclude = [
-    "/.github",
-    "/docs",
-]
+[build-system]
+requires = ["hatchling", "hatch-regex-commit"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build]
+include = ["src/environment_framework", "version.py", "LICENSE", "README.md"]
 
 [tool.hatch.build.targets.wheel]
 packages = [
@@ -84,55 +83,36 @@ version.source = "regex_commit"
 version.path = "version.py"
 version.tag_sign = false
 
-
 [tool.hatch.envs.style]
+python = "3.14"
 features = [
     "style"
 ]
 scripts.check = [
-  "- black --check --diff src/",
+  "- black --target-version py310 --check --diff src/",
   "isort --check-only --diff src/"
 ]
 scripts.fmt = [
-  "black src/",
+  "black --target-version py310 src/",
   "isort src/"
 ]
 
-[tool.hatch.envs.lint]
+[tool.hatch.envs.dev]
 features = [
-    "lint"
+    "lint", "type", "test"
 ]
 scripts.lint = "pylint --recursive=True src/"
-
-[[tool.hatch.envs.lint.matrix]]
-python = [
-    "311"
-]
-
-[tool.hatch.envs.type]
-features = [
-    "type"
-]
-scripts.typing = "mypy src/ && mypy example/*.py"
-
-[[tool.hatch.envs.type.matrix]]
-python = [
-    "38", "39", "310", "311"
-]
-
-[tool.hatch.envs.test]
-features = [
-    "test"
-]
+scripts.typing = "mypy src/"
 scripts.cov = "pytest --cov-report=term-missing --cov-report xml:.coverage.xml --cov-config=pyproject.toml --cov=environment_framework --junitxml=.junit.xml {args}"
 scripts.no-cov = "cov --no-cov {args}"
 
-[[tool.hatch.envs.test.matrix]]
+[[tool.hatch.envs.dev.matrix]]
 python = [
-    "38", "39", "310", "311"
+    "310", "311", "312", "313", "314"
 ]
 
 [tool.hatch.envs.tools]
+python = "3.10"
 scripts.update = "pip-compile {args} pyproject.toml"
 dependencies = [
     "pip-tools"
@@ -144,3 +124,4 @@ line-length = 120
 [tool.isort]
 profile = "black"
 line_length = 120
+

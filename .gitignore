@@ -134,3 +134,4 @@ dmypy.json
 .coverage.xml
 *.svg
 *.zip
+.virtual_documents
